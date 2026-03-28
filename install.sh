@@ -74,51 +74,51 @@ info "Ставлю blocker"
 touch "$LOG_FILE"
 printf '%s\n%s\n' "$LOG_FILE" "1" | bash <(curl -fsSL git.new/install) || true
 
-info "Пишу sysctl anti-ddos"
-cat >/etc/sysctl.d/99-ddos.conf <<'EOF'
-net.ipv4.tcp_syncookies=1
-net.ipv4.tcp_max_syn_backlog=8192
-net.core.somaxconn=4096
-net.ipv4.tcp_synack_retries=3
-net.ipv4.tcp_fin_timeout=15
-EOF
+# info "Пишу sysctl anti-ddos"
+# cat >/etc/sysctl.d/99-ddos.conf <<'EOF'
+# net.ipv4.tcp_syncookies=1
+# net.ipv4.tcp_max_syn_backlog=8192
+# net.core.somaxconn=4096
+# net.ipv4.tcp_synack_retries=3
+# net.ipv4.tcp_fin_timeout=15
+# EOF
 
-sysctl --system
+# sysctl --system
 
-info "Применяю iptables защиту"
+# info "Применяю iptables защиту"
 
-iptables -C INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || \
-iptables -I INPUT 1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+# iptables -C INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || \
+# iptables -I INPUT 1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
-iptables -C INPUT -m conntrack --ctstate INVALID -j DROP 2>/dev/null || \
-iptables -I INPUT 2 -m conntrack --ctstate INVALID -j DROP
+# iptables -C INPUT -m conntrack --ctstate INVALID -j DROP 2>/dev/null || \
+# iptables -I INPUT 2 -m conntrack --ctstate INVALID -j DROP
 
-iptables -C INPUT -p tcp --syn --dport 443 -m connlimit --connlimit-above 80 --connlimit-mask 32 -j DROP 2>/dev/null || \
-iptables -I INPUT 3 -p tcp --syn --dport 443 -m connlimit --connlimit-above 80 --connlimit-mask 32 -j DROP
+# iptables -C INPUT -p tcp --syn --dport 443 -m connlimit --connlimit-above 80 --connlimit-mask 32 -j DROP 2>/dev/null || \
+# iptables -I INPUT 3 -p tcp --syn --dport 443 -m connlimit --connlimit-above 80 --connlimit-mask 32 -j DROP
 
-iptables -C INPUT -p tcp --syn --dport 443 -m hashlimit \
-  --hashlimit-name remna443 \
-  --hashlimit-mode srcip \
-  --hashlimit-upto 120/minute \
-  --hashlimit-burst 80 \
-  -j ACCEPT 2>/dev/null || \
-iptables -I INPUT 4 -p tcp --syn --dport 443 -m hashlimit \
-  --hashlimit-name remna443 \
-  --hashlimit-mode srcip \
-  --hashlimit-upto 120/minute \
-  --hashlimit-burst 80 \
-  -j ACCEPT
+# iptables -C INPUT -p tcp --syn --dport 443 -m hashlimit \
+#   --hashlimit-name remna443 \
+#   --hashlimit-mode srcip \
+#   --hashlimit-upto 120/minute \
+#   --hashlimit-burst 80 \
+#   -j ACCEPT 2>/dev/null || \
+# iptables -I INPUT 4 -p tcp --syn --dport 443 -m hashlimit \
+#   --hashlimit-name remna443 \
+#   --hashlimit-mode srcip \
+#   --hashlimit-upto 120/minute \
+#   --hashlimit-burst 80 \
+#   -j ACCEPT
 
-iptables -C INPUT -p tcp --syn --dport 443 -j DROP 2>/dev/null || \
-iptables -I INPUT 5 -p tcp --syn --dport 443 -j DROP
+# iptables -C INPUT -p tcp --syn --dport 443 -j DROP 2>/dev/null || \
+# iptables -I INPUT 5 -p tcp --syn --dport 443 -j DROP
 
-info "Сохраняю правила"
-netfilter-persistent save
+# info "Сохраняю правила"
+# netfilter-persistent save
 
-echo
-info "Готово"
-echo "Проверка:"
-echo "docker ps"
-echo "docker compose -f $COMPOSE_FILE ps"
-echo "docker compose -f $COMPOSE_FILE logs --tail=100"
-echo "iptables -L INPUT -n --line-numbers"
+# echo
+# info "Готово"
+# echo "Проверка:"
+# echo "docker ps"
+# echo "docker compose -f $COMPOSE_FILE ps"
+# echo "docker compose -f $COMPOSE_FILE logs --tail=100"
+# echo "iptables -L INPUT -n --line-numbers"
