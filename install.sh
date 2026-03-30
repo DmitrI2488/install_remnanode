@@ -58,6 +58,8 @@ services:
     restart: always
     volumes:
       - "/var/log/remnanode:/var/log/remnanode"
+    cap_add:
+      - NET_ADMIN
     ulimits:
       nofile:
         soft: 1048576
